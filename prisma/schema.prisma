@@ -1,0 +1,67 @@
+// prisma/schema.prisma
+
+// Generator definition for Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Define your database connection
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Define the User model with an inverse relation to AuditLog
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  email    String   @unique
+  password String
+  orders   Order[]  // Relation avec Order
+  auditLogs AuditLog[] // Relation avec AuditLog
+}
+
+// Define the Medicine model
+model Medicine {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String
+  form              String
+  dosage            String
+  code              String
+  manufacturer      String
+  expiryDate        DateTime
+  batch             String
+  quantity          Int
+  price             Float
+  storageInfo       String
+  warnings          String
+  interactions      String
+  contraindications String
+  fertility         String
+  dosageInstructions String
+  orders            Order[] // Relation avec Order
+}
+
+// Define the Order model with relations to Medicine and User
+model Order {
+  id           Int      @id @default(autoincrement())
+  medicineId Int // Relation avec Medicine
+  quantity     Int
+  status       String
+  requesterHospital String // Hôpital demandeur
+  requestedMedicine String // Médicament demandé
+  urgencyLevel String // Niveau d'urgence
+  medicine Medicine @relation(fields: [medicineId], references: [id]) // Relation avec Medicine
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id]) // Relation avec User
+}
+
+// Define the AuditLog model with a relation to User
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id]) // Relation avec User
+}
